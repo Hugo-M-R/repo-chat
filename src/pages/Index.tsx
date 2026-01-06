@@ -1,65 +1,76 @@
 import { useState } from "react";
 import { Header } from "@/components/Header";
-import { RepositoryInput } from "@/components/RepositoryInput";
+import { QuestionCard } from "@/components/QuestionCard";
 import { ResponseDisplay } from "@/components/ResponseDisplay";
 import { useToast } from "@/hooks/use-toast";
 
+const QUESTIONS = [
+  {
+    id: "analyze-repo",
+    template: "Analise o repositório {value} e liste os principais arquivos",
+    placeholder: "owner/repository",
+    label: "Análise de Repositório",
+  },
+  {
+    id: "list-issues",
+    template: "Liste as issues abertas do repositório {value}",
+    placeholder: "owner/repository",
+    label: "Listar Issues",
+  },
+  {
+    id: "check-commits",
+    template: "Mostre os últimos commits do repositório {value}",
+    placeholder: "owner/repository",
+    label: "Verificar Commits",
+  },
+  {
+    id: "readme-summary",
+    template: "Resuma o README do repositório {value}",
+    placeholder: "owner/repository",
+    label: "Resumo do README",
+  },
+];
+
 const Index = () => {
-  const [isLoading, setIsLoading] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
-  const [currentRepo, setCurrentRepo] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [activeQuestion, setActiveQuestion] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleSubmit = async (repository: string) => {
+  const handleSubmit = async (questionId: string, value: string) => {
+    const question = QUESTIONS.find((q) => q.id === questionId);
+    if (!question) return;
+
+    const fullQuery = question.template.replace("{value}", value);
+    
     setIsLoading(true);
-    setCurrentRepo(repository);
+    setActiveQuestion(questionId);
     setResponse(null);
 
     try {
       // Simulação - substitua pela chamada real do endpoint
-      // const res = await fetch('/api/analyze', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ repository })
-      // });
-      // const data = await res.json();
-      // setResponse(data.result);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      // Simulação de resposta para demonstração
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setResponse(`Análise do repositório: ${repository}
+      setResponse(`📝 Consulta: ${fullQuery}
 
-📊 Estatísticas:
-├── Commits: 1,234
-├── Contributors: 45
-├── Stars: 2.5k
-└── Forks: 312
+--- Resposta do Agente ---
 
-📁 Estrutura do Projeto:
-├── src/
-│   ├── components/
-│   ├── hooks/
-│   └── utils/
-├── tests/
-└── docs/
+📊 Repositório: ${value}
 
-🔍 Observações do Agente:
-O repositório apresenta uma estrutura bem organizada com separação clara de responsabilidades. O código segue boas práticas de desenvolvimento e possui cobertura de testes adequada.
+Análise concluída com sucesso.
 
-✅ Status: Análise concluída com sucesso`);
+[Resultado simulado - conectar ao endpoint real]`);
 
       toast({
-        title: "Análise concluída",
-        description: `Repositório ${repository} analisado com sucesso.`,
+        title: "Consulta enviada",
+        description: "Resposta recebida com sucesso.",
       });
     } catch (error) {
       toast({
-        title: "Erro na análise",
-        description: "Não foi possível analisar o repositório. Tente novamente.",
+        title: "Erro",
+        description: "Não foi possível processar a consulta.",
         variant: "destructive",
       });
-      setResponse(null);
     } finally {
       setIsLoading(false);
     }
@@ -69,15 +80,26 @@ O repositório apresenta uma estrutura bem organizada com separação clara de r
     <div className="min-h-screen flex flex-col">
       <main className="flex-1 container max-w-3xl mx-auto px-4 py-12 md:py-20">
         <Header />
-        
-        <div className="space-y-6">
-          <RepositoryInput onSubmit={handleSubmit} isLoading={isLoading} />
-          <ResponseDisplay 
-            response={response} 
-            isLoading={isLoading} 
-            repository={currentRepo}
-          />
+
+        <div className="space-y-4 mb-8">
+          {QUESTIONS.map((question) => (
+            <QuestionCard
+              key={question.id}
+              id={question.id}
+              label={question.label}
+              template={question.template}
+              placeholder={question.placeholder}
+              onSubmit={handleSubmit}
+              isLoading={isLoading && activeQuestion === question.id}
+            />
+          ))}
         </div>
+
+        <ResponseDisplay
+          response={response}
+          isLoading={isLoading}
+          repository={activeQuestion}
+        />
       </main>
 
       <footer className="py-6 text-center">
