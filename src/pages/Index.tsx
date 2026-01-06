@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Header } from "@/components/Header";
-import { QuestionCard } from "@/components/QuestionCard";
+import { QuestionSelector } from "@/components/QuestionSelector";
 import { ResponseDisplay } from "@/components/ResponseDisplay";
 import { useToast } from "@/hooks/use-toast";
 
@@ -9,7 +9,7 @@ const QUESTIONS = [
     id: "analyze-repo",
     template: "Analise o repositório {value} e liste os principais arquivos",
     placeholder: "owner/repository",
-    label: "Análise de Repositório",
+    label: "Analisar Repositório",
   },
   {
     id: "list-issues",
@@ -21,13 +21,13 @@ const QUESTIONS = [
     id: "check-commits",
     template: "Mostre os últimos commits do repositório {value}",
     placeholder: "owner/repository",
-    label: "Verificar Commits",
+    label: "Ver Commits",
   },
   {
     id: "readme-summary",
     template: "Resuma o README do repositório {value}",
     placeholder: "owner/repository",
-    label: "Resumo do README",
+    label: "Resumir README",
   },
 ];
 
@@ -48,7 +48,6 @@ const Index = () => {
     setResponse(null);
 
     try {
-      // Simulação - substitua pela chamada real do endpoint
       await new Promise((resolve) => setTimeout(resolve, 2000));
 
       setResponse(`📝 Consulta: ${fullQuery}
@@ -81,19 +80,12 @@ Análise concluída com sucesso.
       <main className="flex-1 container max-w-3xl mx-auto px-4 py-12 md:py-20">
         <Header />
 
-        <div className="space-y-4 mb-8">
-          {QUESTIONS.map((question) => (
-            <QuestionCard
-              key={question.id}
-              id={question.id}
-              label={question.label}
-              template={question.template}
-              placeholder={question.placeholder}
-              onSubmit={handleSubmit}
-              isLoading={isLoading && activeQuestion === question.id}
-            />
-          ))}
-        </div>
+        <QuestionSelector
+          questions={QUESTIONS}
+          onSubmit={handleSubmit}
+          isLoading={isLoading}
+          activeQuestion={activeQuestion}
+        />
 
         <ResponseDisplay
           response={response}
